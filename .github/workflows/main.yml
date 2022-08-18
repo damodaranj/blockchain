@@ -1,0 +1,42 @@
+---
+name: bc apps docker build
+on:
+  push:
+    branches:
+      - main
+jobs:
+  kafka:
+    name: bc app build
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v1
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: "sqp_d03ed73cabe3475abeefec1957be7081a7ffaabd"
+          SONAR_HOST_URL: "http://107.23.14.177:9000"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - uses: azure/docker-login@v1
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      - name: docker build
+        run: docker build -t  ${{ secrets.DOCKER_USER }}/azure-hdinsight-kafka:$GITHUB_RUN_NUMBER .
+      - name: show the docker image name
+        run: echo ${{ secrets.DOCKER_USER }}/azure-hdinsight-kafka:$GITHUB_RUN_NUMBER
+      - name: docker push
+        run: docker push ${{ secrets.DOCKER_USER }}/azure-hdinsight-kafka:$GITHUB_RUN_NUMBER
+      - name: docker logout
+        run: docker logout
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
+        with:
+          host: "107.23.14.177"
+          username: "ubuntu"
+          key: ${{ secrets.KEY }}
+          port: 22
+          script: docker run -d -p 9090:9000 --name bc ${{ secrets.DOCKER_USER }}/azure-hdinsight-kafka:$GITHUB_RUN_NUMBER
