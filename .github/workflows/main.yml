@@ -25,11 +25,11 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
       - name: docker build
-        run: docker build -t  ${{ secrets.DOCKER_USER }}/azure-hdinsight-kafka:$GITHUB_RUN_NUMBER .
+        run: docker build -t  ${{ secrets.DOCKER_USER }}/bc:latest .
       - name: show the docker image name
-        run: echo ${{ secrets.DOCKER_USER }}/azure-hdinsight-kafka:$GITHUB_RUN_NUMBER
+        run: echo ${{ secrets.DOCKER_USER }}/bc:latest
       - name: docker push
-        run: docker push ${{ secrets.DOCKER_USER }}/azure-hdinsight-kafka:$GITHUB_RUN_NUMBER
+        run: docker push ${{ secrets.DOCKER_USER }}/bc:latest
       - name: docker logout
         run: docker logout
       - name: executing remote ssh commands using password
@@ -39,4 +39,4 @@ jobs:
           username: "ubuntu"
           key: ${{ secrets.KEY }}
           port: 22
-          script: docker run -d -p 9090:9000 --name bc ${{ secrets.DOCKER_USER }}/azure-hdinsight-kafka:$GITHUB_RUN_NUMBER
+          script: docker run -d -p 9090:9000 --name bc saidamo/bc:latest
